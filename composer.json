@@ -10,12 +10,7 @@
         }
     ],
     "require": {
-        "symfony/filesystem": "^5.0",
-        "doctrine/doctrine-bundle": "^2.4",
-        "doctrine/orm": "^2.9",
-        "symfony/property-access": "^5.0",
-        "symfony/twig-bundle": "^5.0",
-        "symfony/validator": "^5.0"
+        "symfony/filesystem": "^5.0"
     },
     "require-dev": {
         "symfony/framework-bundle": "^5.0"

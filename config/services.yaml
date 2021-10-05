@@ -1,45 +1,8 @@
 services:
     Jupi\DropzoneJsUploaderBundle\Service\DropzoneJsUploader:
-        arguments: ['@jupi_dropzone_js_storage_manager', '@request_stack', '@doctrine.orm.default_entity_manager', '@validator']
+        arguments: ['@request_stack']
         public: true
 
     jupi_dropzone_js_uploader:
         alias: Jupi\DropzoneJsUploaderBundle\Service\DropzoneJsUploader
         public: true
-
-
-    Jupi\DropzoneJsUploaderBundle\Mapping\MappingReader:
-        arguments: ['']
-        public: false
-
-    jupi_dropzone_js_mapping_reader: 
-        alias: Jupi\DropzoneJsUploaderBundle\Mapping\MappingReader
-        public: false
-
-
-    Jupi\DropzoneJsUploaderBundle\Storage\StorageManager:
-        arguments: ['@jupi_dropzone_js_mapping_reader']
-        public: false
-
-    jupi_dropzone_js_storage_manager: 
-        alias: Jupi\DropzoneJsUploaderBundle\Storage\StorageManager
-        public: false
-
-
-    Jupi\DropzoneJsUploaderBundle\EventSubscribers\Doctrine\RemoveSuscriber:
-        public: false
-        arguments: ['@jupi_dropzone_js_storage_manager']
-        tags:
-            - name: 'doctrine.event_subscriber'
-
-    
-    Jupi\DropzoneJsUploaderBundle\Twig\UploaderExtension:
-        public: false
-        tags:
-            - name: 'twig.extension'
-
-    Jupi\DropzoneJsUploaderBundle\Twig\UploaderRuntime:
-        public: false
-        arguments: ['@jupi_dropzone_js_storage_manager']
-        tags:
-            - name: 'twig.runtime'

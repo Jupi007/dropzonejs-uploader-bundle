@@ -14,26 +14,6 @@ class Configuration implements ConfigurationInterface
     {
         $builder = new TreeBuilder('jupi_dropzone_js_uploader');
 
-        $root = $builder->getRootNode();
-
-        $root->children()
-            ->arrayNode('mappings')
-                ->useAttributeAsKey('id')
-                ->prototype('array')
-                    ->children()
-                        ->scalarNode('upload_destination')
-                            ->isRequired()
-                            ->cannotBeEmpty()
-                        ->end()
-                        ->scalarNode('uri_prefix')
-                            ->isRequired()
-                            ->cannotBeEmpty()
-                        ->end()
-                    ->end()
-                ->end()
-            ->end()
-        ->end();
-
         return $builder;
     }
 }
