@@ -1,12 +1,6 @@
 <h1 align="center">Jupi DropzoneJS Uploader Bundle</h1>
 
-A Symfony bundle to handle [Dropzone.js](https://github.com/dropzone/dropzone) upload request with Doctrine storage, heavily inpired by [VichUploaderBundle](https://github.com/dustin10/VichUploaderBundle).
-
-This bundle **_currently only_** provide:
-
-- A service to handle an upload request call from Dropzone.js (which can be chunked).
-- A twig helper function.
-- A doctrine listener to automatically delete file when database row is removed.
+A Symfony bundle to handle [Dropzone.js](https://github.com/dropzone/dropzone) upload request.
 
 Installation
 ============
@@ -49,15 +43,3 @@ return [
     Jupi\DropzoneJsUploaderBundle\DropzoneJsUploaderBundle::class => ['all' => true],
 ];
 ```
-
-# TODO list
-
-**⚠ This bundle is still wip.**
-
-- [ ] Code cleaning and refactoring.
-- [ ] Add phpdoc blocks.
-- [ ] Write some unit tests.
-- [ ] Add custom file namer support.
-- [ ] Add documentation.
-
-Any contribution is welcome :)
