@@ -51,7 +51,7 @@ The way of working of this bundle is very simple. It provides a `DropzoneJsUploa
 
 If the request is chunked, a temp file is created inside the system temp folder (using `sys_get_temp_dir()`) and the callback function is only called when the file is entirely uploaded.
 
-I hightly recommend to use [VichUploaderBundle](https://github.com/dustin10/VichUploaderBundle) to handle the database saving.
+I hightly recommend to use [VichUploaderBundle](https://github.com/dustin10/VichUploaderBundle) to handle the database saving side.
 
 ```php
 <?php
@@ -67,9 +67,9 @@ use Jupi\DropzoneJsUploaderBundle\Service\DropzoneJsUploader;
 class AppController extends AbstractController
 {
     /**
-     * @Route("/target", name="dropzone_file_send")
+     * @Route("/upload", name="upload")
      */
-    public function ajaxSnippetFileSendAction(DropzoneJsUploader $dropzoneUploader): Response
+    public function upload(DropzoneJsUploader $dropzoneUploader): Response
     {
         $dropzoneUploader->handleRequest(function (UploadedFile $file) {
             $entity = new File(); // Assuming it is a correctly configured VichUploadable class
