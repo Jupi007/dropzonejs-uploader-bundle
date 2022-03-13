@@ -1,6 +1,6 @@
 <h1 align="center">Jupi DropzoneJS Uploader Bundle</h1>
 
-A Symfony bundle to handle [Dropzone.js](https://github.com/dropzone/dropzone) upload request.
+An ultra simple Symfony bundle to handle [Dropzone.js](https://github.com/dropzone/dropzone) upload request.
 
 Installation
 ============
