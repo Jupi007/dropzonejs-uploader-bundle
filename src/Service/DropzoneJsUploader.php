@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Jupi\DropzoneJsUploaderBundle\Service;
 
 use Jupi\DropzoneJsUploaderBundle\Request\DropzoneRequest;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class DropzoneJsUploader
 {
@@ -24,7 +24,9 @@ class DropzoneJsUploader
 
     public function handleRequest(callable $callback): void
     {
-        if ($this->isRequestHandled) throw new \Exception("Error: the current request has already been handled");
+        if ($this->isRequestHandled) {
+            throw new \Exception('Error: the current request has already been handled');
+        }
 
         if ($this->request->isChunkedRequest()) {
             $this->handleChunkedRequest($callback);
@@ -39,16 +41,18 @@ class DropzoneJsUploader
     {
         $file = $this->request->getFile();
 
-        $callback($file);
+        if ($file instanceof UploadedFile) {
+            $callback($file);
+        }
     }
 
     private function handleChunkedRequest(callable $callback): void
     {
         $chunk = $this->request->getFile();
 
-        $tempFileName = $this->request->getChunkUuid() . $chunk->getClientOriginalExtension();
+        $tempFileName = $this->request->getChunkUuid().$chunk->getClientOriginalExtension();
         $tempDir = sys_get_temp_dir();
-        $tempFilePath = $tempDir . \DIRECTORY_SEPARATOR . $tempFileName;
+        $tempFilePath = $tempDir.\DIRECTORY_SEPARATOR.$tempFileName;
 
         if ($this->request->isFirstChunk()) {
             $chunk->move($tempDir, $tempFileName);
@@ -58,7 +62,9 @@ class DropzoneJsUploader
             if ($this->request->isLastChunk()) {
                 $file = new UploadedFile($tempFilePath, $chunk->getClientOriginalName(), null, null, true);
 
-                $callback($file);
+                if ($file instanceof UploadedFile) {
+                    $callback($file);
+                }
             }
         }
     }
