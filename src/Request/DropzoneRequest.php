@@ -45,12 +45,12 @@ class DropzoneRequest
 
     public function isChunkedRequest(): bool
     {
-        return $this->chunkUuid != null;
+        return null != $this->chunkUuid;
     }
 
     public function isFirstChunk(): bool
     {
-        return $this->chunkIndex == 0;
+        return 0 == $this->chunkIndex;
     }
 
     public function isLastChunk(): bool
