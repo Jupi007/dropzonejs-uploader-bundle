@@ -47,39 +47,43 @@ return [
 Usage
 =====
 
-The way of working of this bundle is very simple. It provides a `DropzoneJsUploader` service which handle the current request and pass the uploaded file to the callback function.
+The way of working of this bundle is very simple. It provides a param converter which handle the current request and pass the uploaded file to the controller
 
-If the request is chunked, a temp file is created inside the system temp folder (using `sys_get_temp_dir()`) and the callback function is only called when the file is entirely uploaded.
+If the request is chunked, a temp file is created inside the system temp folder (using `sys_get_temp_dir()`) and `null` is passed to the controller until the file is entirely uploaded.
 
-I hightly recommend to use [VichUploaderBundle](https://github.com/dustin10/VichUploaderBundle) to handle the database saving side.
+I personally recommend to use [VichUploaderBundle](https://github.com/dustin10/VichUploaderBundle) to handle the database saving side.
 
 ```php
 <?php
 
 namespace App\Controller;
 
+use App\Entity\File;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use App\Entity\File;
 // ...
-use Jupi\DropzoneJsUploaderBundle\Service\DropzoneJsUploader;
+use Jupi\DropzoneJsUploaderBundle\Attribute\DropzoneJsParamConverter;
 
 class AppController extends AbstractController
 {
-    /**
-     * @Route("/upload", name="upload")
-     */
-    public function upload(DropzoneJsUploader $dropzoneUploader): Response
+    #[Route("/upload", name:"upload")]
+    #[DropzoneJsParamConverter('file')]
+    public function upload(?UploadedFile $file, EntityManagerInterface $em): Response
     {
-        $dropzoneUploader->handleRequest(function (UploadedFile $file) {
-            $entity = new File(); // Assuming it is a correctly configured VichUploadable class
+        // Check if $file is not null, in case of a chunked request
+        if (null !== $file) {
+            // Assuming it is a correctly configured VichUploadable class
+            $entity = new File();
             $entity->setFile($file);
 
-            $em = $this->getDoctrine()->getManager();
             $em->persist($entity);
             $em->flush();
-        });
+        }
 
+        // Return a success resonse
+        // In case of an error, this bundle will correct the response format by cleaning it
+        // so Dropzone.JS will display the correct 500 error message
         return new JsonResponse(['success' => true]);
     }
 }
