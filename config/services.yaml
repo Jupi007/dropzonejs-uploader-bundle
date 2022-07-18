@@ -1,8 +1,14 @@
 services:
-    Jupi\DropzoneJsUploaderBundle\Service\DropzoneJsUploader:
+    jupi.dropzone_js_upload_manager:
+        class: Jupi\DropzoneJsUploaderBundle\Service\UploadManager
         arguments: ['@request_stack']
-        public: true
 
-    jupi_dropzone_js_uploader:
-        alias: Jupi\DropzoneJsUploaderBundle\Service\DropzoneJsUploader
-        public: true
+    Jupi\DropzoneJsUploaderBundle\ParamConverter\ParamConverterRuntime:
+        arguments: ['@jupi.dropzone_js_upload_manager']
+        tags:
+            - {name: request.param_converter, converter: jupi.dropzone_js_converter, priority: false}
+
+    Jupi\DropzoneJsUploaderBundle\EventSubscriber\KernelSubscriber:
+        arguments: ['@jupi.dropzone_js_upload_manager']
+        tags:
+            - kernel.event_subscriber

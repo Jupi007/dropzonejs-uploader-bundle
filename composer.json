@@ -10,6 +10,7 @@
         }
     ],
     "require": {
+        "sensio/framework-extra-bundle": "^5.0 || ^6.0",
         "symfony/filesystem": "^5.0 || ^6.0",
         "symfony/config": "^5.0 || ^6.0",
         "symfony/dependency-injection": "^5.0 || ^6.0",
