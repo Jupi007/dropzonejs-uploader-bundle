@@ -69,7 +69,7 @@ class AppController extends AbstractController
 {
     #[Route("/upload", name:"upload")]
     #[DropzoneJsParamConverter('file')]
-    public function upload(?UploadedFile $file, EntityManagerInterface $em): Response
+    public function upload(EntityManagerInterface $em, ?UploadedFile $file): Response
     {
         // Check if $file is not null, in case of a chunked request
         if (null !== $file) {
