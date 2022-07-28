@@ -10,6 +10,7 @@
         }
     ],
     "require": {
+        "psr/log": "^1|^2|^3",
         "sensio/framework-extra-bundle": "^5.0 || ^6.0",
         "symfony/filesystem": "^5.0 || ^6.0",
         "symfony/config": "^5.0 || ^6.0",
