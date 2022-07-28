@@ -25,7 +25,7 @@ class DropzoneChunkedRequest
         $this->uuid = (string) $this->fetchRequestInput($request, 'dzuuid');
         $this->chunkIndex = (int) $this->fetchRequestInput($request, 'dzchunkindex');
         $this->chunkSize = (int) $this->fetchRequestInput($request, 'dzchunksize');
-        $this->chunkByteOffset = (int) $this->fetchRequestInput($request, 'dzchunkbyteffset');
+        $this->chunkByteOffset = (int) $this->fetchRequestInput($request, 'dzchunkbyteoffset');
         $this->totalChunkCount = (int) $this->fetchRequestInput($request, 'dztotalchunkcount');
         $this->totalFileSize = (int) $this->fetchRequestInput($request, 'dztotalfilesize');
     }
