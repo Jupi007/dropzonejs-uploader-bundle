@@ -23,7 +23,13 @@ class UploadManager
 
     public function __construct(RequestStack $requestStack, LoggerInterface $logger)
     {
-        $this->request = $requestStack->getCurrentRequest();
+        $request = $requestStack->getCurrentRequest();
+
+        if (!$request instanceof Request) {
+            throw new \LogicException('A current request is required.');
+        }
+
+        $this->request = $request;
         $this->logger = $logger;
         $this->filesystem = new Filesystem();
     }
@@ -31,7 +37,7 @@ class UploadManager
     public function handleCurrentRequest(): ?UploadedFile
     {
         if ($this->currentRequestHandled) {
-            throw new \LogicException('This request has already been handled');
+            throw new \LogicException('This request has already been handled.');
         }
 
         $this->currentRequestHandled = true;

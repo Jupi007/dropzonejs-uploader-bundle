@@ -51,7 +51,7 @@ The way of working of this bundle is very simple. It provides a param converter 
 
 If the request is chunked, a temp file is created inside the system temp folder (using `sys_get_temp_dir()`) and `null` is passed to the controller until the file is entirely uploaded.
 
-I personally recommend to use [VichUploaderBundle](https://github.com/dustin10/VichUploaderBundle) to handle the database saving side.
+I recommend to use [VichUploaderBundle](https://github.com/dustin10/VichUploaderBundle) to handle the database saving side.
 
 ```php
 <?php
@@ -63,13 +63,17 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 // ...
-use Jupi\DropzoneJsUploaderBundle\Attribute\DropzoneJsParamConverter;
+use Jupi\DropzoneJsUploaderBundle\Attribute\MapDropzoneJsUpload;
 
 class AppController extends AbstractController
 {
     #[Route("/upload", name:"upload")]
-    #[DropzoneJsParamConverter('file')]
-    public function upload(EntityManagerInterface $em, ?UploadedFile $file): Response
+    public function upload(
+        EntityManagerInterface $em,
+
+        #[MapDropzoneJsUpload]
+        ?UploadedFile $file,
+    ): Response
     {
         // Check if $file is not null, in case of a chunked request
         if (null !== $file) {
@@ -82,7 +86,7 @@ class AppController extends AbstractController
         }
 
         // Return a success resonse
-        // In case of an error, this bundle will correct the response format by cleaning it
+        // In case of an error, this bundle will correct the response format
         // so Dropzone.JS will display the correct 500 error message
         return new JsonResponse(['success' => true]);
     }

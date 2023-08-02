@@ -22,19 +22,30 @@ class DropzoneChunkedRequest
     {
         $this->file = $this->fetchRequestFile($request, 'file');
 
-        $this->uuid = (string) $this->fetchRequestInput($request, 'dzuuid');
-        $this->chunkIndex = (int) $this->fetchRequestInput($request, 'dzchunkindex');
-        $this->chunkSize = (int) $this->fetchRequestInput($request, 'dzchunksize');
-        $this->chunkByteOffset = (int) $this->fetchRequestInput($request, 'dzchunkbyteoffset');
-        $this->totalChunkCount = (int) $this->fetchRequestInput($request, 'dztotalchunkcount');
-        $this->totalFileSize = (int) $this->fetchRequestInput($request, 'dztotalfilesize');
+        $this->uuid = $this->fetchStringRequestInput($request, 'dzuuid');
+        $this->chunkIndex = $this->fetchIntRequestInput($request, 'dzchunkindex');
+        $this->chunkSize = $this->fetchIntRequestInput($request, 'dzchunksize');
+        $this->chunkByteOffset = $this->fetchIntRequestInput($request, 'dzchunkbyteoffset');
+        $this->totalChunkCount = $this->fetchIntRequestInput($request, 'dztotalchunkcount');
+        $this->totalFileSize = $this->fetchIntRequestInput($request, 'dztotalfilesize');
     }
 
-    private function fetchRequestInput(Request $request, string $key): mixed
+    private function fetchStringRequestInput(Request $request, string $key): string
     {
         $input = $request->request->get($key);
 
-        if (null === $input) {
+        if (!\is_string($input)) {
+            throw new SoftFailException(sprintf('The "%s" request input key is missing.', $key));
+        }
+
+        return $input;
+    }
+
+    private function fetchIntRequestInput(Request $request, string $key): int
+    {
+        $input = $request->request->get($key);
+
+        if (!\is_int($input)) {
             throw new SoftFailException(sprintf('The "%s" request input key is missing.', $key));
         }
 
