@@ -5,14 +5,10 @@ services:
     tags:
       - { name: monolog.logger, channel: dropzone_uploader }
 
-  Jupi\DropzoneJsUploaderBundle\ParamConverter\ParamConverterRuntime:
+  Jupi\DropzoneJsUploaderBundle\ValueResolver\DropzoneJsValueResolver:
     arguments: ["@jupi.dropzone_js_upload_manager"]
     tags:
-      - {
-          name: request.param_converter,
-          converter: jupi.dropzone_js_converter,
-          priority: false,
-        }
+      - { name: controller.argument_value_resolver, priority: 101 }
 
   Jupi\DropzoneJsUploaderBundle\EventSubscriber\KernelSubscriber:
     arguments: ["@jupi.dropzone_js_upload_manager"]
