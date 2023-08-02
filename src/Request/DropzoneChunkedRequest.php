@@ -32,7 +32,7 @@ class DropzoneChunkedRequest
 
     private function fetchStringRequestInput(Request $request, string $key): string
     {
-        $input = $request->request->get($key);
+        $input = (string) $request->request->get($key);
 
         if (!\is_string($input)) {
             throw new SoftFailException(sprintf('The "%s" request input key is missing.', $key));
@@ -43,7 +43,7 @@ class DropzoneChunkedRequest
 
     private function fetchIntRequestInput(Request $request, string $key): int
     {
-        $input = $request->request->get($key);
+        $input = (int) $request->request->get($key);
 
         if (!\is_int($input)) {
             throw new SoftFailException(sprintf('The "%s" request input key is missing.', $key));
