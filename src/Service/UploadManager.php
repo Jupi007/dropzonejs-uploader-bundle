@@ -115,7 +115,7 @@ class UploadManager
     /** @return null */
     public function throwSoftUploadFail(string $message)
     {
-        $this->logger->warning($message);
+        $this->logger->error($message);
         $this->softUploadFail = true;
 
         return null;
