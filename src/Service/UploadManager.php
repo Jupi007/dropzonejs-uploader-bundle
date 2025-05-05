@@ -8,6 +8,7 @@ use Jupi\DropzoneJsUploaderBundle\Exception\SoftFailException;
 use Jupi\DropzoneJsUploaderBundle\Request\DropzoneChunkedRequest;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\Exception\PartialFileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -73,16 +74,20 @@ class UploadManager
 
         $chunk = $dzRequest->getFile();
 
-        if ($chunk->getSize() !== $dzRequest->getChunkSize()) {
-            return $this->throwSoftUploadFail('Chunk size doesn\'t match the expected one');
-        }
+        // if ($chunk->getSize() !== $dzRequest->getChunkSize()) {
+        //     return $this->throwSoftUploadFail('Chunk size doesn\'t match the expected one');
+        // }
 
         $tempFileName = $dzRequest->getUuid().$chunk->getClientOriginalExtension();
         $tempDir = sys_get_temp_dir();
         $tempFilePath = $tempDir.\DIRECTORY_SEPARATOR.$tempFileName;
 
         if ($dzRequest->isFirstChunk()) {
-            $chunk->move($tempDir, $tempFileName);
+            try {
+                $chunk->move($tempDir, $tempFileName);
+            } catch (PartialFileException $e) {
+                return $this->throwSoftUploadFail($e->getMessage());
+            }
         } else {
             $this->filesystem->appendToFile($tempFilePath, $chunk->getContent());
 
