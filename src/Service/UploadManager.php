@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Jupi\DropzoneJsUploaderBundle\Service;
 
-use Jupi\DropzoneJsUploaderBundle\Exception\SoftFailException;
+use Jupi\DropzoneJsUploaderBundle\Exception\BadDropzoneRequest;
 use Jupi\DropzoneJsUploaderBundle\Request\DropzoneChunkedRequest;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -20,7 +20,8 @@ class UploadManager
     private Filesystem $filesystem;
 
     private bool $currentRequestHandled = false;
-    private bool $softUploadFail = false;
+    private bool $uploadFail = false;
+    private string $uploadFailMessage = '';
 
     public function __construct(RequestStack $requestStack, LoggerInterface $logger)
     {
@@ -59,7 +60,7 @@ class UploadManager
             return $file;
         }
 
-        return $this->throwSoftUploadFail('The file is missing in the request');
+        return $this->throwUploadFail('The file is missing in the request');
     }
 
     private function handleChunkedRequest(): ?UploadedFile
@@ -68,17 +69,17 @@ class UploadManager
 
         try {
             $dzRequest = new DropzoneChunkedRequest($this->request);
-        } catch (SoftFailException $e) {
-            return $this->throwSoftUploadFail($e->getMessage());
+        } catch (BadDropzoneRequest $e) {
+            return $this->throwUploadFail($e->getMessage());
         }
 
         $chunk = $dzRequest->getFile();
 
-        // if ($chunk->getSize() !== $dzRequest->getChunkSize()) {
-        //     return $this->throwSoftUploadFail('Chunk size doesn\'t match the expected one');
-        // }
+        if ($chunk->getSize() !== $dzRequest->getChunkSize()) {
+            return $this->throwUploadFail('Chunk size doesn\'t match the expected one');
+        }
 
-        $tempFileName = $dzRequest->getUuid().$chunk->getClientOriginalExtension();
+        $tempFileName = 'phpdropzonejs'.$dzRequest->getUuid();
         $tempDir = sys_get_temp_dir();
         $tempFilePath = $tempDir.\DIRECTORY_SEPARATOR.$tempFileName;
 
@@ -86,16 +87,18 @@ class UploadManager
             try {
                 $chunk->move($tempDir, $tempFileName);
             } catch (PartialFileException $e) {
-                return $this->throwSoftUploadFail($e->getMessage());
+                return $this->throwUploadFail($e->getMessage());
             }
         } else {
             $this->filesystem->appendToFile($tempFilePath, $chunk->getContent());
 
             if ($dzRequest->isLastChunk()) {
-                // "test" is true because we are creating a fake upload with a local file
-                $file = new UploadedFile($tempFilePath, $chunk->getClientOriginalName(), test: true);
-
-                return $file;
+                return new UploadedFile(
+                    path: $tempFilePath,
+                    originalName: $chunk->getClientOriginalName(),
+                    mimeType: mime_content_type($tempFilePath),
+                    test: true,
+                );
             }
         }
 
@@ -112,16 +115,21 @@ class UploadManager
         return $this->currentRequestHandled;
     }
 
-    public function isUploadSoftFailed(): bool
+    public function isUploadFailed(): bool
     {
-        return $this->softUploadFail;
+        return $this->uploadFail;
     }
 
-    /** @return null */
-    public function throwSoftUploadFail(string $message)
+    public function getUploadFailedMessage(): string
+    {
+        return $this->uploadFailMessage;
+    }
+
+    public function throwUploadFail(string $message): null
     {
         $this->logger->error($message);
-        $this->softUploadFail = true;
+        $this->uploadFail = true;
+        $this->uploadFailMessage = $message;
 
         return null;
     }
