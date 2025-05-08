@@ -12,8 +12,9 @@ use Symfony\Component\HttpFoundation\File\Exception\PartialFileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Service\ResetInterface;
 
-class UploadManager
+class UploadManager implements ResetInterface
 {
     private Request $request;
     private LoggerInterface $logger;
@@ -36,6 +37,13 @@ class UploadManager
         $this->filesystem = new Filesystem();
     }
 
+    public function reset()
+    {
+        $this->currentRequestHandled = false;
+        $this->uploadFail = false;
+        $this->uploadFailMessage = '';
+    }
+
     public function handleCurrentRequest(): ?UploadedFile
     {
         if ($this->currentRequestHandled) {
@@ -56,11 +64,11 @@ class UploadManager
         $this->logger->info('Handling single request');
         $file = $this->request->files->get('file');
 
-        if ($file instanceof UploadedFile) {
-            return $file;
+        if (!$file instanceof UploadedFile) {
+            return $this->throwUploadFail('The file is missing in the request');
         }
 
-        return $this->throwUploadFail('The file is missing in the request');
+        return $file;
     }
 
     private function handleChunkedRequest(): ?UploadedFile
@@ -76,7 +84,9 @@ class UploadManager
         $chunk = $dzRequest->getFile();
 
         if ($chunk->getSize() !== $dzRequest->getChunkSize()) {
-            return $this->throwUploadFail('Chunk size doesn\'t match the expected one');
+            return $this->throwUploadFail(
+                \sprintf('Chunk size doesn\'t match the expected one. Expected %s, current %s.', $dzRequest->getChunkSize(), $chunk->getSize()),
+            );
         }
 
         $tempFileName = 'phpdropzonejs'.$dzRequest->getUuid();

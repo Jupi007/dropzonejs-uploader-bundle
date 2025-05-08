@@ -19,7 +19,7 @@ class KernelSubscriber implements EventSubscriberInterface
 
     public function onKernelResponse(ResponseEvent $event): void
     {
-        if (200 !== $event->getResponse()->getStatusCode()) {
+        if (!$event->isMainRequest() || 200 !== $event->getResponse()->getStatusCode()) {
             return;
         }
 
