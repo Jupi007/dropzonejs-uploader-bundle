@@ -16,32 +16,24 @@ use Symfony\Contracts\Service\ResetInterface;
 
 class UploadManager implements ResetInterface
 {
-    private Request $request;
-    private LoggerInterface $logger;
     private Filesystem $filesystem;
 
     private bool $currentRequestHandled = false;
-    private bool $uploadFail = false;
-    private string $uploadFailMessage = '';
+    private bool $uploadFailed = false;
+    private string $uploadFailedMessage = '';
 
-    public function __construct(RequestStack $requestStack, LoggerInterface $logger)
-    {
-        $request = $requestStack->getCurrentRequest();
-
-        if (!$request instanceof Request) {
-            throw new \LogicException('A current request is required.');
-        }
-
-        $this->request = $request;
-        $this->logger = $logger;
+    public function __construct(
+        private readonly RequestStack $requestStack,
+        private readonly LoggerInterface $logger,
+    ) {
         $this->filesystem = new Filesystem();
     }
 
     public function reset(): void
     {
         $this->currentRequestHandled = false;
-        $this->uploadFail = false;
-        $this->uploadFailMessage = '';
+        $this->uploadFailed = false;
+        $this->uploadFailedMessage = '';
     }
 
     public function handleCurrentRequest(): ?UploadedFile
@@ -59,13 +51,24 @@ class UploadManager implements ResetInterface
         return $this->handleSingleRequest();
     }
 
+    private function getCurrentRequest(): Request
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (!$request instanceof Request) {
+            throw new \LogicException('A current request is required.');
+        }
+
+        return $request;
+    }
+
     private function handleSingleRequest(): ?UploadedFile
     {
         $this->logger->info('Handling single request');
-        $file = $this->request->files->get('file');
+        $file = $this->getCurrentRequest()->files->get('file');
 
         if (!$file instanceof UploadedFile) {
-            return $this->throwUploadFail('The file is missing in the request');
+            return $this->throwUploadFailed('The file is missing in the request');
         }
 
         return $file;
@@ -76,15 +79,15 @@ class UploadManager implements ResetInterface
         $this->logger->info('Handling chunked request');
 
         try {
-            $dzRequest = new DropzoneChunkedRequest($this->request);
+            $dzRequest = new DropzoneChunkedRequest($this->getCurrentRequest());
         } catch (BadDropzoneRequest $e) {
-            return $this->throwUploadFail($e->getMessage());
+            return $this->throwUploadFailed($e->getMessage());
         }
 
         $chunk = $dzRequest->getFile();
 
         if ($chunk->getSize() !== $dzRequest->getChunkSize()) {
-            return $this->throwUploadFail(
+            return $this->throwUploadFailed(
                 \sprintf('Chunk size doesn\'t match the expected one. Expected %s, current %s.', $dzRequest->getChunkSize(), $chunk->getSize()),
             );
         }
@@ -97,7 +100,7 @@ class UploadManager implements ResetInterface
             try {
                 $chunk->move($tempDir, $tempFileName);
             } catch (PartialFileException $e) {
-                return $this->throwUploadFail($e->getMessage());
+                return $this->throwUploadFailed($e->getMessage());
             }
         } else {
             $this->filesystem->appendToFile($tempFilePath, $chunk->getContent());
@@ -117,7 +120,7 @@ class UploadManager implements ResetInterface
 
     private function isChunkedRequest(): bool
     {
-        return null !== $this->request->request->get('dzuuid');
+        return null !== $this->getCurrentRequest()->request->get('dzuuid');
     }
 
     public function isCurrentRequestHandled(): bool
@@ -127,19 +130,19 @@ class UploadManager implements ResetInterface
 
     public function isUploadFailed(): bool
     {
-        return $this->uploadFail;
+        return $this->uploadFailed;
     }
 
     public function getUploadFailedMessage(): string
     {
-        return $this->uploadFailMessage;
+        return $this->uploadFailedMessage;
     }
 
-    public function throwUploadFail(string $message): null
+    public function throwUploadFailed(string $message): null
     {
         $this->logger->error($message);
-        $this->uploadFail = true;
-        $this->uploadFailMessage = $message;
+        $this->uploadFailed = true;
+        $this->uploadFailedMessage = $message;
 
         return null;
     }
